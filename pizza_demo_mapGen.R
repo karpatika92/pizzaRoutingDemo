@@ -129,13 +129,13 @@ routes_df=list()
 i=1
 
 from1 <- depotAdress
-
+sleepTime=2
 #number of routes
 numRoutes=max(sampleSDF@data$routes)
 routes_final=list()
 #for every route
 for(i in 1:numRoutes){
-  Sys.sleep(1)
+  Sys.sleep(sleepTime)
   #first, get route length
   #number of WAYPOINTS
   numWP=length(which(routes==i))
@@ -148,13 +148,14 @@ for(i in 1:numRoutes){
   
 #GO TO FIRST POINT IN ADDRESSLIST FROM DEPOT
 #I SHOULD WRITE AN ALGORITHM TO SOLVE THE TSP! A SIMPLE 3-OPT WILL DO.
-Sys.sleep(1)
+Sys.sleep(sleepTime)
 tempRoute <- NULL
 attempt <- 1
-
-while( is.null(tempRoute) && attempt <= 5 ) {
+maxAttempt=10
+sleepTime=2
+while( is.null(tempRoute) && attempt <= maxAttempt ) {
   attempt <- attempt + 1
-  Sys.sleep(1)
+  Sys.sleep(sleepTime)
   try(
     
     tempRoute <- route(from=from1, to=adressList[1], structure = 'route', mode = 'driving')
@@ -166,13 +167,13 @@ routes_df[[i]]=tempRoute
 #either 2 or 3 waypoints as specified by user
 #we need stuff to make them able to modify this
 if(numWP==2){
-  Sys.sleep(1)
+  Sys.sleep(sleepTime)
   print("lol1")
   tempRoute <- NULL
   attempt <- 1
   while( is.null(tempRoute) && attempt <= 5 ) {
     attempt <- attempt + 1
-    Sys.sleep(1)
+    Sys.sleep(sleepTime)
     try(
       
       tempRoute <- route(adressList[1], adressList[2], structure = 'route', mode = 'driving')
@@ -184,23 +185,23 @@ if(numWP==2){
   attempt <- 1
   while( is.null(tempRoute) && attempt <= 5 ) {
     attempt <- attempt + 1
-    Sys.sleep(1)
+    Sys.sleep(sleepTime)
     try(
       
       tempRoute <- route(adressList[2], from1, structure = 'route', mode = 'driving')
     )
   } 
-  Sys.sleep(1)
+  Sys.sleep(sleepTime)
   routes_df[[i]]=rbind(routes_df[[i]],tempRoute)
   
 }else{
   print("lol3")
-  Sys.sleep(1)
+  Sys.sleep(sleepTime)
   tempRoute <- NULL
   attempt <- 1
   while( is.null(tempRoute) && attempt <= 5 ) {
     attempt <- attempt + 1
-    Sys.sleep(1)
+    Sys.sleep(sleepTime)
     try(
       
       tempRoute <- route(adressList[1], from1, structure = 'route', mode = 'driving')
