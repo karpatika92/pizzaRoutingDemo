@@ -5,7 +5,7 @@ library(shiny)
 library(leaflet)
 library(tmap)
 library(tmaptools)
-library(OpenStreetMap)
+#library(OpenStreetMap)
 library(maps)
 library(sp)
 library(rgdal)
@@ -17,7 +17,7 @@ library(SpatialTools)
 library(dplyr)
 library(osmar)
 library(ggmap)
-source('~/pizzaprojekt/assignment/rndTime.R')
+source('~/pizzaRoutingDemo/rndTime.R')
 #This is a demonstration. With some mock data I assign orders to runners and plot the result on a leaflet.
 #First, red a list of adresses from POS terminal. 
 #This is the mock data. The adresses are prepared by developer.
@@ -38,7 +38,7 @@ colnames(sampleData)<-c("Adress","orderTime")
 #create string of actual adress
 sampleCoords=data.frame()
 #--------------GEOCODING ------------
-#smart geocoding by line and tríing until it is successful!
+#smart geocoding by line and tr?ing until it is successful!
 sampleData$lon=rep(0,nrow(sampleData))
 sampleData$lat=rep(0,nrow(sampleData))
 print('lol')
