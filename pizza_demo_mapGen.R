@@ -24,7 +24,7 @@ source('~/pizzaRoutingDemo/rndTime.R')
 #----------------------MOCK DATA GENERATION----------------------
 mock_pizza=function(){
   print('lol')
-cimlista <- read_csv("~/pizzaprojekt/assignment/cimlista.csv", 
+cimlista <- read_csv("~/pizzaRoutingDemo/cimlista.csv", 
                      col_names = FALSE)
 #take a sample from it
 set.seed(1)
@@ -100,7 +100,7 @@ totalDistMat=adressDistMat+timeDistMat
 
 #Source Optimization function
 print("SOURCING OPT FUN")
-source('~/pizzaprojekt/1007 - V2.0/pizzaRouting_1007.R')
+source('~/pizzaRoutingDemo/pizzaRouting_1007.R')
 #pizzaRouting returns the ROUTES from the below parameters
 
 routes=pizzaRouting(totalDistMat,depotAdress,depotCoords,avgSpeed)
@@ -234,4 +234,4 @@ pizzaMap
 return(pizzaMap)
 }
 
-mock_pizza()
+#mock_pizza()
