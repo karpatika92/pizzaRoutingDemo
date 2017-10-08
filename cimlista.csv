@@ -1,25 +1,29 @@
-﻿"Budapest X. kerület, Maglódi út 89-91."
-"Budapest II. kerület, Bolyai utca 5-9."
-"Budapest XXI. kerület, Déli utca 11."
-"Budapest IX. kerület, Haller utca 29."
-"Budapest XIII. kerület, Szabolcs utca 33-35."
-"Budapest VIII. kerület, Üllői utca 86."
-"Budapest XX. kerület, Köves út 2-4."
-"Budapest XII. kerület, Istenhegyi út 54/a"
-"Budapest XIII. kerület, Róbert Károly körút 44."
-"Budapest XIII. kerület, Madarász utca 22-24."
-"Budapest XIV. kerület, Amerikai út 53."
-"Budapest XIV. kerület, Bethesda utca 3."
-"Budapest XIII. kerület, Lehel utca 59."
-"Budapest VIII. kerület, Szentkirályi utca 46."
-"Budapest VIII. kerület, Mária utca 41."
-"Budapest IX. kerület, Tűzoltó utca 7-9."
-"Budapest XII. kerület, Városmajor utca 68."
-"Budapest XII. kerület, Városmajor utca 68."
-"Budapest XI. kerület, Daróczi út 24."
-"Budapest XIV. kerület, Amerikai út 57."
-"Budapest XII. kerület, Pihenő út 1."
-"Budapest XII. kerület, Ráth György utca 7-9."
-"Budapest XI. kerület, Karolina út 27."
-"Budapest XII. kerület, Szanatórium utca 2."
-"Budapest II. kerület, Frankel Leó út 25-29."
+"X1","X2","X3"
+"X1","X2","X3"
+"X1","X2","X3"
+"X1","lat","lon"
+"Budapest X. kerület, Maglódi út 89-91.",NA,NA
+"Budapest II. kerület, Bolyai utca 5-9.",NA,NA
+"Budapest XXI. kerület, Déli utca 11.",NA,NA
+"Budapest IX. kerület, Haller utca 29.",NA,NA
+"Budapest XIII. kerület, Szabolcs utca 33-35.",NA,NA
+"Budapest VIII. kerület, Ülloi utca 86.",NA,NA
+"Budapest XX. kerület, Köves út 2-4.","47.4247281","19.1311455"
+"Budapest XII. kerület, Istenhegyi út 54/a",NA,NA
+"Budapest XIII. kerület, Róbert Károly körút 44.","47.5312106","19.0719202"
+"Budapest XIII. kerület, Madarász utca 22-24.",NA,NA
+"Budapest XIV. kerület, Amerikai út 53.",NA,NA
+"Budapest XIV. kerület, Bethesda utca 3.",NA,NA
+"Budapest XIII. kerület, Lehel utca 59.",NA,NA
+"Budapest VIII. kerület, Szentkirályi utca 46.","47.4883764","19.0667584"
+"Budapest VIII. kerület, Mária utca 41.",NA,NA
+"Budapest IX. kerület, Tuzoltó utca 7-9.",NA,NA
+"Budapest XII. kerület, Városmajor utca 68.",NA,NA
+"Budapest XII. kerület, Városmajor utca 68.",NA,NA
+"Budapest XI. kerület, Daróczi út 24.",NA,NA
+"Budapest XIV. kerület, Amerikai út 57.","47.5182017","19.0982333"
+"Budapest XII. kerület, Piheno út 1.",NA,NA
+"Budapest XII. kerület, Ráth György utca 7-9.",NA,NA
+"Budapest XI. kerület, Karolina út 27.",NA,NA
+"Budapest XII. kerület, Szanatórium utca 2.",NA,NA
+"Budapest II. kerület, Frankel Leó út 25-29.",NA,NA

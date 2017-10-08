@@ -25,6 +25,8 @@ mock_pizza_read_data=function(){
   source('~/pizzaRoutingDemo/rndTime.R')
   cimlista <- read_csv("~/pizzaRoutingDemo/cimlista.csv", 
                        col_names = FALSE)
+  cimlista=cimlista[,1]
+  print(cimlista)
   #take a sample from it
   set.seed(1)
   sampleSize=4
@@ -35,17 +37,31 @@ mock_pizza_read_data=function(){
   sampleData=cbind(sampleAddresses,orderTimes)
   colnames(sampleData)<-c("Adress","orderTime")
   #create string of actual adress
+  #
   return(sampleData)
 }
 #geocoding function
 mock_pizza_geocoding=function(sampleData){
+  
   #smart geocoding by line and tr?ing until it is successful!
   sampleData$lon=rep(0,nrow(sampleData))
   sampleData$lat=rep(0,nrow(sampleData))
+  cimlista <- read_csv("~/pizzaRoutingDemo/cimlista.csv", 
+                       col_names = FALSE)
+  if(ncol(cimlista)==1){
+    cimlista$lat=NA
+    cimlista$lon=NA
+  }
   print('lol')
   for(i in 1:length(sampleData$Adress)){
     success=FALSE
     attempt=1
+    if(!is.na(cimlista[which(cimlista[,1]==sampleData$Adress[i]),2])){
+      sampleData$lon[i]=as.numeric(cimlista[which(cimlista[,1]==sampleData$Adress[i]),2])
+      sampleData$lat[i]=as.numeric(cimlista[which(cimlista[,1]==sampleData$Adress[i]),3])
+      success=TRUE
+      print("I Found it in the database!")
+    }
     while(!success&attempt<10){
       Sys.sleep(1)
       print('Attempting to geocode location')
@@ -55,6 +71,9 @@ mock_pizza_geocoding=function(sampleData){
         print("Successful Geocoding")
         sampleData$lon[i]=geocodes$lat
         sampleData$lat[i]=geocodes$lon
+        cimlista[which(cimlista$X1==sampleData$Adress[i]),]$lat=geocodes$lat
+        cimlista[which(cimlista$X1==sampleData$Adress[i]),]$lon=geocodes$lon
+        
       }
       attempt=attempt+1
     }
@@ -64,8 +83,9 @@ mock_pizza_geocoding=function(sampleData){
   #convert to SpatialPointsDataframe. This is important!!!!!!! From now on no shitting with column names and stuff
   sampleSDF=SpatialPointsDataFrame(sampleData[,4:3],sampleData[,1:2])
   print(sampleSDF)
-  #designate depot
-  
+  #write the geocoords to the original csv
+  #cimlista=merge(cimlista,sampleData[,c(1,4,3)],by.x="X1",by.y="Adress",all.x=TRUE)
+  write.csv(cimlista,file="~/pizzaRoutingDemo/cimlista.csv",row.names=FALSE,fileEncoding = "UTF-8")
   return(sampleSDF)
 }
 mock_pizza_router=function(sampleSDF,depotAdress){
@@ -232,7 +252,7 @@ mock_pizza_assigner=function(sampleSDF,depotCoords,depotAdress,timeConstraint,av
   #add urgency to df
   sampleSDF@data=cbind(sampleSDF@data,urgencyAll)
   sampleSDF=sampleSDF[rev(order(sampleSDF@data$urgencyAll)),]
-  sampleSDF@data
+  #sampleSDF@data
   #calculate distmat
   #create distance matrix of adresses and times
   #distance based on adresses
