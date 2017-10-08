@@ -17,12 +17,12 @@ library(SpatialTools)
 library(dplyr)
 library(osmar)
 library(ggmap)
-source('~/pizzaRoutingDemo/rndTime.R')
 #This is a demonstration. With some mock data I assign orders to runners and plot the result on a leaflet.
 #First, red a list of adresses from POS terminal. 
 #This is the mock data. The adresses are prepared by developer.
 #mock data generator function
 mock_pizza_read_data=function(){
+  source('~/pizzaRoutingDemo/rndTime.R')
   cimlista <- read_csv("~/pizzaRoutingDemo/cimlista.csv", 
                        col_names = FALSE)
   #take a sample from it
@@ -47,7 +47,7 @@ mock_pizza_geocoding=function(sampleData){
     success=FALSE
     attempt=1
     while(!success&attempt<10){
-      Sys.sleep(2)
+      Sys.sleep(1)
       print('Attempting to geocode location')
       geocodes=rev(geocode(sampleData$Adress[i]))
       if(!is.na(geocodes)){
@@ -167,8 +167,55 @@ mock_pizza_router=function(sampleSDF,depotAdress){
   routes_final=as.data.frame(do.call(rbind,routes_df))
   #define color for each route
   routes_final$color=rainbow(numRoutes)[routes_final$routeNum]
-  return(routes_final)  
+  return(routes_final)
+  print(routes_final)
 }
+
+mock_piza_waitTime=function(sampleSDF,routes_final){
+  library(lubridate)
+  numRoutes=max(sampleSDF@data$routes)
+  sampleSDF@data$startTime=NA
+  sampleSDF@data$arrivalTime=NA
+  prepTime=10
+  #calculate the time for starting
+  for(i in 1:numRoutes){
+    sampleSDF@data[sampleSDF@data$routes==i,]$startTime=max(sampleSDF@data[sampleSDF@data$routes==i,]$orderTime)+prepTime*60
+    
+  }
+  
+  numAdresses=nrow(sampleSDF@data)
+  sampleSDF@data$startTime=as.POSIXct(sampleSDF@data$startTime,origin=origin)
+  #calculate the time of arrival
+  breaks=which(is.na(routes_final$leg))
+  
+  sectorTimes=c()
+  for(i in 1:(length(breaks))){
+    if(i==1){
+      sectorTimes[i]=sum(routes_final$seconds[1:breaks[i]],na.rm=TRUE)/60
+      }else{
+    sectorTimes[i]=sum(routes_final$seconds[breaks[i-1]:breaks[i]],na.rm=TRUE)/60
+      }
+    }
+  print("SECTORTIMES")
+  print(sectorTimes)
+
+    for(i in 1:numAdresses){
+      currentroute=sampleSDF@data$routes[i]
+      if(i==1){
+      sampleSDF@data$arrivalTime[i]=sampleSDF@data$startTime[i]+sum(routes_final$seconds[1:breaks[i+currentroute-1]],na.rm = TRUE)
+      }else if(sampleSDF@data$routes[i-1]!=sampleSDF@data$routes[i]){
+        sampleSDF@data$arrivalTime[i]=sampleSDF@data$startTime[i]+sum(routes_final$seconds[breaks[i+currentroute-1-1]:breaks[i+currentroute-1]],na.rm = TRUE)
+      }else{
+        sampleSDF@data$arrivalTime[i]=sampleSDF@data$arrivalTime[i-1]+sum(routes_final$seconds[breaks[i+currentroute-1-1]:breaks[i+currentroute-1]],na.rm = TRUE)
+      }
+    }
+    
+  
+  sampleSDF@data$arrivalTime=as.POSIXct(sampleSDF@data$arrivalTime,origin=origin)
+  sampleSDF@data$waitingTime=sampleSDF@data$arrivalTime-sampleSDF@data$orderTime
+  return(sampleSDF)
+}
+
 
 mock_pizza_assigner=function(sampleSDF,depotCoords,depotAdress,timeConstraint,avgSpeed){
   print("STARTING ASSIGNMENT")
@@ -220,6 +267,27 @@ mock_pizza_assigner=function(sampleSDF,depotCoords,depotAdress,timeConstraint,av
   return(sampleSDF)
 }
 
+mock_pizza_mapGen=function(sampleSDF,routes_final){
+  print("MAPPING")
+  numRoutes=max(sampleSDF@data$routes)
+  pal <- colorNumeric(c("red", "green", "blue"), 1:numRoutes)
+  lon=mean(sampleSDF@bbox[1,])
+  lat=mean(sampleSDF@bbox[2,])
+  urgencyIcons=awesomeIconList(green=makeAwesomeIcon(icon= 'flag', markerColor = 'green', iconColor = 'green'),
+                               red=makeAwesomeIcon(icon= 'flag', markerColor = 'red', iconColor = 'red'),
+                               yellow=makeAwesomeIcon(icon= 'flag', markerColor = 'yellow', iconColor = 'yellow'))
+  #now plot stuff on a map
+  pizzaMap=leaflet(data=sampleSDF) %>%
+    setView(lng = lon, lat = lat, zoom = 12)%>%
+    addTiles()
+  pizzaMap<-addAwesomeMarkers(pizzaMap,label=~as.factor(routes),icon = urgencyIcons[sampleSDF@data$group])
+  for( i in 1:numRoutes){
+    pizzaMap <- addPolylines(pizzaMap, lng=routes_final[routes_final$routeNum==i,]$lon,lat=routes_final[routes_final$routeNum==i,]$lat,data=routes_final[routes_final$routeNum==i,], color=pal(i))
+  }
+  return(pizzaMap)
+}
+
+
 mock_pizza=function(){
   print('lol')
 #----------------------MOCK DATA GENERATION----------------------
@@ -239,29 +307,12 @@ avgSpeed=20/3600
 
 sampleSDF=mock_pizza_assigner(sampleSDF,depotCoords,depotAdress,timeConstraint,avgSpeed)
 #---------------------ROUTE CALCULATION---------------------
-sleepTime=2
+sleepTime=1
 #number of routes
 numRoutes=max(sampleSDF@data$routes)
 routes_final=mock_pizza_router(sampleSDF,depotAdress)
 pal <- colorNumeric(c("red", "green", "blue"), 1:numRoutes)
 #----------------------Creating Map -------------------------
-mock_pizza_mapGen=function(sampleSDF,routes_final){
-print("MAPPING")
-  lon=mean(sampleSDF@bbox[1,])
-  lat=mean(sampleSDF@bbox[2,])
-  urgencyIcons=awesomeIconList(green=makeAwesomeIcon(icon= 'flag', markerColor = 'green', iconColor = 'green'),
-                               red=makeAwesomeIcon(icon= 'flag', markerColor = 'red', iconColor = 'red'),
-                               yellow=makeAwesomeIcon(icon= 'flag', markerColor = 'yellow', iconColor = 'yellow'))
-  #now plot stuff on a map
-pizzaMap=leaflet(data=sampleSDF) %>%
-  setView(lng = lon, lat = lat, zoom = 12)%>%
-  addTiles()
-  pizzaMap<-addAwesomeMarkers(pizzaMap,label=~as.factor(routes),icon = urgencyIcons[sampleSDF@data$group])
-  for( i in 1:numRoutes){
-    pizzaMap <- addPolylines(pizzaMap, lng=routes_final[routes_final$routeNum==i,]$lon,lat=routes_final[routes_final$routeNum==i,]$lat,data=routes_final[routes_final$routeNum==i,], color=pal(i))
-  }
-  return(pizzaMap)
-}
 pizzaMap=mock_pizza_mapGen(sampleSDF,routes_final)
 
 pizzaMap
