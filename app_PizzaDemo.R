@@ -38,13 +38,15 @@ ui <- shinyUI(pageWithSidebar(
 ))
 
 server <- function(input, output, session) {
+  #The map
       output$mymap <- renderLeaflet({
         mock_pizza()
 
   })
+      #event upon marker click
       observeEvent(input$mymap_marker_click,{
       print("lol")
     })
-    
+    #histogram of waiting time of customers
 }
 shinyApp(ui, server)
