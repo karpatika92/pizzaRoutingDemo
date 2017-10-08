@@ -33,7 +33,9 @@ ui <- shinyUI(pageWithSidebar(
   
   # Show a table summarizing the values entered
   mainPanel(
-    leafletOutput("mymap")
+    leafletOutput("mymap"),
+    plotOutput(outputId = "waitPlot")
+    
   )
 ))
 
@@ -63,6 +65,18 @@ server <- function(input, output, session) {
         mock_pizza_mapGen(sampleSDF,routes_final)
 
   })
+      output$waitPlot <- renderPlot({
+        
+        x    <- as.numeric(sampleSDF$waitingTime)
+        print("LOL")
+        bins <- seq(min(x), max(x), length.out = 4 + 1)
+        
+        hist(x, breaks = bins, col = "#75AADB", border = "white",
+             xlab = "Waiting time to pizza arrival",
+             main = "Histogram of waiting times")
+        
+      })
+      
       #event upon marker click
       observeEvent(input$mymap_marker_click,{
       print("lol")
