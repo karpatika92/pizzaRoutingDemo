@@ -1,0 +1,10 @@
+﻿* gomb--ujragenerálni a térképet
+* hány cím legyen?
+* max cím egy útban
+* max úthossz km
+* futárok száma
+* térképen markerlabel tartalmazza: cím,rendelés ideje,
+* tab2: legyen egy tábla amiben benne vannak a rendelések
+* tab2: alatta egy histogram amiben a depo-tol való távolság látható
+* tab2: hist várakozási idő
+* szétszedni függvényekre
