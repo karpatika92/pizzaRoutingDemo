@@ -103,11 +103,12 @@ server <- function(input, output, session) {
         print(clickedLine)
         print(manualRPMode$value)
         proxy <- leafletProxy("mymap")
-        if(manualRPMode$value==FALSE){
+        if(manualRPMode$value==TRUE){
           sampleSDF@data$sectionID[sampleSDF@data$sectionID==clickedLine$id]=NA
           sampleSDF@data$section[sampleSDF@data$sectionID==clickedLine$id]=NA
           sampleSDF@data$sectionID[sampleSDF@data$sectionID==clickedLine$id]=NA
           removeShape(proxy,clickedLine$id)
+          print(sampleSDF@data)
         }
         
         })
@@ -119,12 +120,12 @@ server <- function(input, output, session) {
         print(data$clickedMarker)})
       #ENTER END LEAVE MANUAL ROUTE PLANNING MODE
       observeEvent(input$enterRPMode, {
-        manualRPMode=TRUE
-        print(manualRPMode)
+        manualRPMode$value=TRUE
+        print(manualRPMode$value)
       })
       observeEvent(input$endRPMode, {
-        manualRPMode=FALSE
-        print(manualRPMode)
+        manualRPMode$value=FALSE
+        print(manualRPMode$value)
       })
       
 
