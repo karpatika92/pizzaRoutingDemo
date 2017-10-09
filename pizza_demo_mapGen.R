@@ -300,6 +300,7 @@ mock_pizza_assigner=function(sampleSDF,depotCoords,depotAdress,timeConstraint,av
   print(sampleSDF@data)
   names(sampleSDF@data)=c(names(sampleSDF@data)[1:3],"routes","section","TimeSinceORder")
   sampleSDF@data=mutate(sampleSDF@data,group=cut(as.double(urgencyTime),breaks = urgencyLevels,labels=c("green","yellow","red"))) 
+  sampleSDF@data$sectionID=paste(sampleSDF@data$route,"_",sampleSDF@data$section)
   return(sampleSDF)
 }
 

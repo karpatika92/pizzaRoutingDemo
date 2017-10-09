@@ -44,7 +44,10 @@ ui <- shinyUI(pageWithSidebar(
 server <- function(input, output, session) {
   #generation fake data
   data <- reactiveValues(clickedMarker=NULL)
-  p <- reactiveValues(clickedLine=NULL)
+  #this stores the clicked line
+  clickedLine <- reactiveValues(clickedLine=NULL)
+  manualRPMode=reactiveValues(value = FALSE)
+  
   print("READING DATA")
   sampleData=mock_pizza_read_data()
   print("STARTING GEOCODING")
@@ -67,8 +70,10 @@ server <- function(input, output, session) {
   print(sampleSDF)
   
   #The map
+  displayMap=mock_pizza_mapGen(sampleSDF,routes_final,depotAdress,depotCoords)
+  
       output$mymap <- renderLeaflet({
-        mock_pizza_mapGen(sampleSDF,routes_final,depotAdress,depotCoords)
+        displayMap
 
   })
       output$waitPlot <- renderPlot({
@@ -94,8 +99,18 @@ server <- function(input, output, session) {
       #POLYLINE CLICK
       
       observeEvent(input$mymap_shape_click,{
-        p <- input$mymap_shape_click
-        print(p)})
+        clickedLine <- input$mymap_shape_click
+        print(clickedLine)
+        print(manualRPMode$value)
+        proxy <- leafletProxy("mymap")
+        if(manualRPMode$value==FALSE){
+          sampleSDF@data$sectionID[sampleSDF@data$sectionID==clickedLine$id]=NA
+          sampleSDF@data$section[sampleSDF@data$sectionID==clickedLine$id]=NA
+          sampleSDF@data$sectionID[sampleSDF@data$sectionID==clickedLine$id]=NA
+          removeShape(proxy,clickedLine$id)
+        }
+        
+        })
       
       
       #MARKER CLICK
@@ -103,7 +118,6 @@ server <- function(input, output, session) {
         data$clickedMarker <- NULL
         print(data$clickedMarker)})
       #ENTER END LEAVE MANUAL ROUTE PLANNING MODE
-      manualRPMode=reactiveVal(value = FALSE)
       observeEvent(input$enterRPMode, {
         manualRPMode=TRUE
         print(manualRPMode)
