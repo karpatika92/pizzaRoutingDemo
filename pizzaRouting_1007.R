@@ -1,5 +1,5 @@
 pizzaRouting=function(totalDistMat, depotAdress,depotCoords,avgSpeed){
-  route=vector(length = nrow(totalDistMat))
+  route=data.frame(route=rep(0,nrow(totalDistMat)),section=rep(0,nrow(totalDistMat)))
   currentItem=1
   currentRoute=1
   nextItem=1
@@ -8,15 +8,17 @@ pizzaRouting=function(totalDistMat, depotAdress,depotCoords,avgSpeed){
     #delete its distance from others
     totalDistMat[,currentItem]=Inf
     
-    route[currentItem]=currentRoute
+    route$route[currentItem]=currentRoute
     #select the closest one to it
-    print("CI")
+    #print("CI")
     print(totalDistMat[currentItem,])
     if(is.finite(min(as.numeric(totalDistMat[currentItem,])))){
       print("adding")
-      route[which(totalDistMat[currentItem,]==min(totalDistMat[currentItem,]))]=currentRoute}
-    remain=which(route==0)
-    done=which(route!=0)
+      route$route[which(totalDistMat[currentItem,]==min(totalDistMat[currentItem,]))]=currentRoute}
+    remain=which(route$route==0)
+    print(remain)
+    done=which(route$route!=0)
+    print(done)
     nextItem=min(remain)
     totalDistMat[,done]=Inf
     currentRoute=currentRoute+1
@@ -32,5 +34,13 @@ pizzaRouting=function(totalDistMat, depotAdress,depotCoords,avgSpeed){
     print(route)
     
   }
+  #now set the order in which the adresses come!
+  for(i in nrow(route)){
+    tempTable=table(route$route[1:i])
+    route$section[i]=tempTable[names(tempTable)==route$route[i]]
+  }
+  print("Route with Section!")
+  print(route)
+  
   return(route)
 }

@@ -28,7 +28,9 @@ ui <- shinyUI(pageWithSidebar(
                 step=30*60,
                 value = c(as.POSIXct(Sys.time())-10000*60*60,
                           as.POSIXct(Sys.time()))),
-    actionButton("update", "Update range")
+    actionButton("enterRPMode", "Enter Route Planning Mode"),
+    actionButton("endRPMode", "Leave Route Planning Mode")
+    
   ),
   
   # Show a table summarizing the values entered
@@ -41,7 +43,11 @@ ui <- shinyUI(pageWithSidebar(
 
 server <- function(input, output, session) {
   #generation fake data
+  data <- reactiveValues(clickedMarker=NULL)
+  p <- reactiveValues(clickedLine=NULL)
+  print("READING DATA")
   sampleData=mock_pizza_read_data()
+  print("STARTING GEOCODING")
   sampleSDF=mock_pizza_geocoding(sampleData)
   depotAdress="Budapest IX. kerulet , Viola u. 48"
   depotCoords=rev(geocode_OSM(depotAdress)[[2]])
@@ -62,7 +68,7 @@ server <- function(input, output, session) {
   
   #The map
       output$mymap <- renderLeaflet({
-        mock_pizza_mapGen(sampleSDF,routes_final)
+        mock_pizza_mapGen(sampleSDF,routes_final,depotAdress,depotCoords)
 
   })
       output$waitPlot <- renderPlot({
@@ -76,11 +82,38 @@ server <- function(input, output, session) {
              main = "Histogram of waiting times")
         
       })
-      
       #event upon marker click
       observeEvent(input$mymap_marker_click,{
-      print("lol")
-    })
-    #histogram of waiting time of customers
+        data$clickedMarker <- input$mymap_marker_click
+        print(data$clickedMarker)
+        if(data$clickedMarker$id==depotAdress){
+          print("You Clicked the Depot, Time to click on the first location!")
+        }
+          }
+      )
+      #POLYLINE CLICK
+      
+      observeEvent(input$mymap_shape_click,{
+        p <- input$mymap_shape_click
+        print(p)})
+      
+      
+      #MARKER CLICK
+      observeEvent(input$mymap_click,{
+        data$clickedMarker <- NULL
+        print(data$clickedMarker)})
+      #ENTER END LEAVE MANUAL ROUTE PLANNING MODE
+      manualRPMode=reactiveVal(value = FALSE)
+      observeEvent(input$enterRPMode, {
+        manualRPMode=TRUE
+        print(manualRPMode)
+      })
+      observeEvent(input$endRPMode, {
+        manualRPMode=FALSE
+        print(manualRPMode)
+      })
+      
+
+#histogram of waiting time of customers
 }
 shinyApp(ui, server)

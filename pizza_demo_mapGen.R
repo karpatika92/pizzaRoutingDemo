@@ -23,56 +23,64 @@ library(ggmap)
 #mock data generator function
 mock_pizza_read_data=function(){
   source('~/pizzaRoutingDemo/rndTime.R')
-  cimlista <- read_csv("~/pizzaRoutingDemo/cimlista.csv", 
-                       col_names = FALSE)
-  cimlista=cimlista[,1]
+  cimlista <- read.table("~/pizzaRoutingDemo/cimlista.csv",sep=",",fileEncoding = "UTF-8")
+  #cimlista=cimlista[,1]
   print(cimlista)
   #take a sample from it
   set.seed(1)
   sampleSize=4
-  sampleAddresses=cimlista[sample(nrow(cimlista),sampleSize),]
+  sampleAddresses=as.character(cimlista[sample(nrow(cimlista),sampleSize),]$V1)
   #Genereate ordertimes in specified timeframe
-  orderTimes=rndTime(sampleSize,st="2017/07/25 3:00:00",et="2017/07/25 3:30:00")
+  orderTimes=as.character(rndTime(sampleSize,st="2017/07/25 3:00:00",et="2017/07/25 3:30:00"))
   #combine with adresses
-  sampleData=cbind(sampleAddresses,orderTimes)
+  sampleData=as.data.frame(cbind(sampleAddresses,orderTimes))
   colnames(sampleData)<-c("Adress","orderTime")
+  sampleData$orderTime=as.POSIXct(sampleData$orderTime,origin= "1960-01-01")
   #create string of actual adress
-  #
+  sampleData$Adress=as.character(sampleData$Adress)
+  print(sampleData)
   return(sampleData)
 }
 #geocoding function
 mock_pizza_geocoding=function(sampleData){
-  
+  sampleData$Adress=as.character(sampleData$Adress)
+  sampleData$Adress=iconv(as.character(sampleData$Adress),'Latin1', "ASCII//TRANSLIT")
   #smart geocoding by line and tr?ing until it is successful!
   sampleData$lon=rep(0,nrow(sampleData))
   sampleData$lat=rep(0,nrow(sampleData))
-  cimlista <- read_csv("~/pizzaRoutingDemo/cimlista.csv", 
-                       col_names = FALSE)
+  cimlista <- read.table("~/pizzaRoutingDemo/cimlista.csv",sep=",",fileEncoding = "UTF-8")
   if(ncol(cimlista)==1){
     cimlista$lat=NA
     cimlista$lon=NA
   }
+  cimlista[,1]=as.character(cimlista[,1])
+  cimlista[,1]=iconv(as.character(cimlista[,1]),'Latin1',"ASCII//TRANSLIT")
+  print(cimlista)
+  names(cimlista)=c('Adress','lat','lon')
   print('lol')
   for(i in 1:length(sampleData$Adress)){
     success=FALSE
     attempt=1
-    if(!is.na(cimlista[which(cimlista[,1]==sampleData$Adress[i]),2])){
-      sampleData$lon[i]=as.numeric(cimlista[which(cimlista[,1]==sampleData$Adress[i]),2])
-      sampleData$lat[i]=as.numeric(cimlista[which(cimlista[,1]==sampleData$Adress[i]),3])
-      success=TRUE
-      print("I Found it in the database!")
-    }
-    while(!success&attempt<10){
+    #checking if latlon has been recorded yet
+    print(which(as.character(cimlista[,1])==sampleData$Adress[i]))
+    # if(!is.na(cimlista[which(as.character(cimlista[,1])==sampleData$Adress[i]),2])){
+    #   sampleData$lon[i]=as.numeric(cimlista[which(cimlista[,1]==sampleData$Adress[i]),2])
+    #   sampleData$lat[i]=as.numeric(cimlista[which(cimlista[,1]==sampleData$Adress[i]),3])
+    #   success=TRUE
+    #   print("I Found it in the database!")
+    # }
+    while(!success&attempt<5){
       Sys.sleep(1)
       print('Attempting to geocode location')
-      geocodes=rev(geocode(sampleData$Adress[i]))
+      geocodes=rev(geocode(as.character(sampleData$Adress[i]),source = 'google'))
+      print(geocodes)
       if(!is.na(geocodes)){
         success=TRUE
         print("Successful Geocoding")
         sampleData$lon[i]=geocodes$lat
         sampleData$lat[i]=geocodes$lon
-        cimlista[which(cimlista$X1==sampleData$Adress[i]),]$lat=geocodes$lat
-        cimlista[which(cimlista$X1==sampleData$Adress[i]),]$lon=geocodes$lon
+        cimlista[which(cimlista$Adress==sampleData$Adress[i]),]$lat=geocodes$lat
+        cimlista[which(cimlista$Adress==sampleData$Adress[i]),]$lon=geocodes$lon
         
       }
       attempt=attempt+1
@@ -85,7 +93,7 @@ mock_pizza_geocoding=function(sampleData){
   print(sampleSDF)
   #write the geocoords to the original csv
   #cimlista=merge(cimlista,sampleData[,c(1,4,3)],by.x="X1",by.y="Adress",all.x=TRUE)
-  write.csv(cimlista,file="~/pizzaRoutingDemo/cimlista.csv",row.names=FALSE,fileEncoding = "UTF-8")
+  #write.table(cimlista,file="~/pizzaRoutingDemo/cimlista.csv",row.names=FALSE,col.names=FALSE,fileEncoding = "UTF-8")
   return(sampleSDF)
 }
 mock_pizza_router=function(sampleSDF,depotAdress){
@@ -129,7 +137,7 @@ mock_pizza_router=function(sampleSDF,depotAdress){
         tempRoute <- route(from=from1, to=adressList[1], structure = 'route', mode = 'driving')
       )
     } 
-    
+    tempRoute$section=1
     print(tempRoute)
     routes_df[[i]]=tempRoute
     #either 2 or 3 waypoints as specified by user
@@ -147,6 +155,8 @@ mock_pizza_router=function(sampleSDF,depotAdress){
           tempRoute <- route(adressList[1], adressList[2], structure = 'route', mode = 'driving')
         )
       } 
+      tempRoute$section=2
+      
       routes_df[[i]]=rbind(routes_df[[i]],tempRoute)
       print("lol2")
       tempRoute <- NULL
@@ -160,6 +170,8 @@ mock_pizza_router=function(sampleSDF,depotAdress){
         )
       } 
       Sys.sleep(sleepTime)
+      tempRoute$section=3
+      
       routes_df[[i]]=rbind(routes_df[[i]],tempRoute)
       
     }else{
@@ -175,6 +187,7 @@ mock_pizza_router=function(sampleSDF,depotAdress){
           tempRoute <- route(adressList[1], from1, structure = 'route', mode = 'driving')
         )
       } 
+      tempRoute$section=2
       
       routes_df[[i]]=rbind(routes_df[[i]],tempRoute)
       
@@ -271,6 +284,7 @@ mock_pizza_assigner=function(sampleSDF,depotCoords,depotAdress,timeConstraint,av
   
   routes=pizzaRouting(totalDistMat,depotAdress,depotCoords,avgSpeed)
   print("I GOT EM' TOUTES M8")
+  print(routes)
   #every adress is matched to the route
   sampleSDF@data=cbind(sampleSDF@data,routes)
   #set center of map
@@ -280,14 +294,15 @@ mock_pizza_assigner=function(sampleSDF,depotCoords,depotAdress,timeConstraint,av
   urgencyLevels=c(0,5*60,10*60,Inf)
   #add time since order to dataframe
   print("MEGALOL")
-  sampleSDF@data=cbind(sampleSDF@data,as.POSIXct("2017/07/25 3:30:00")-sampleSDF@data$orderTime)
+  timeWaitedNow=as.POSIXct("2017/07/25 3:30:00")-sampleSDF@data$orderTime
+  sampleSDF@data=cbind(sampleSDF@data,timeWaitedNow)
   print(sampleSDF@data)
-  names(sampleSDF@data)=c(names(sampleSDF@data)[1:3],"routes","TimeSinceORder")
+  names(sampleSDF@data)=c(names(sampleSDF@data)[1:3],"routes","section","TimeSinceORder")
   sampleSDF@data=mutate(sampleSDF@data,group=cut(as.double(urgencyTime),breaks = urgencyLevels,labels=c("green","yellow","red"))) 
   return(sampleSDF)
 }
 
-mock_pizza_mapGen=function(sampleSDF,routes_final){
+mock_pizza_mapGen=function(sampleSDF,routes_final,depotAdress,depotCoords){
   print("MAPPING")
   numRoutes=max(sampleSDF@data$routes)
   pal <- colorNumeric(c("red", "green", "blue"), 1:numRoutes)
@@ -295,15 +310,22 @@ mock_pizza_mapGen=function(sampleSDF,routes_final){
   lat=mean(sampleSDF@bbox[2,])
   urgencyIcons=awesomeIconList(green=makeAwesomeIcon(icon= 'flag', markerColor = 'green', iconColor = 'green'),
                                red=makeAwesomeIcon(icon= 'flag', markerColor = 'red', iconColor = 'red'),
-                               yellow=makeAwesomeIcon(icon= 'flag', markerColor = 'yellow', iconColor = 'yellow'))
-  #now plot stuff on a map
+                               yellow=makeAwesomeIcon(icon= 'flag', markerColor = 'yellow', iconColor = 'yellow'),
+                               depot=makeAwesomeIcon(icon= 'flag', markerColor = 'red', iconColor = 'red'))
+                               #now plot stuff on a map
   pizzaMap=leaflet(data=sampleSDF) %>%
     setView(lng = lon, lat = lat, zoom = 12)%>%
     addTiles()
-  pizzaMap<-addAwesomeMarkers(pizzaMap,label=~as.factor(routes),icon = urgencyIcons[sampleSDF@data$group])
+  pizzaMap<-addAwesomeMarkers(pizzaMap,layerId =sampleSDF@data$Adress,  label=~as.factor(routes),icon = urgencyIcons[sampleSDF@data$group])
   for( i in 1:numRoutes){
     pizzaMap <- addPolylines(pizzaMap, lng=routes_final[routes_final$routeNum==i,]$lon,lat=routes_final[routes_final$routeNum==i,]$lat,data=routes_final[routes_final$routeNum==i,], color=pal(i))
   }
+  #add depot
+  print('ADDING DEPOT')
+  addMarkers(pizzaMap, lng = 19.1, lat = 47.5)
+  addMarkers(pizzaMap, lng = 47.5, lat = 19.1)
+  
+  pizzaMap<-addMarkers(pizzaMap, layerId =depotAdress,lng = depotCoords[2], lat = depotCoords[1],label='DEPOT')
   return(pizzaMap)
 }
 
