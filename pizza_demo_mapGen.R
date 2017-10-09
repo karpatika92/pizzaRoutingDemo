@@ -200,6 +200,7 @@ mock_pizza_router=function(sampleSDF,depotAdress){
   routes_final=as.data.frame(do.call(rbind,routes_df))
   #define color for each route
   routes_final$color=rainbow(numRoutes)[routes_final$routeNum]
+  routes_final$sectionID=paste(routes_final$routeNum,"_",routes_final$section)
   return(routes_final)
   print(routes_final)
 }
@@ -317,8 +318,13 @@ mock_pizza_mapGen=function(sampleSDF,routes_final,depotAdress,depotCoords){
     setView(lng = lon, lat = lat, zoom = 12)%>%
     addTiles()
   pizzaMap<-addAwesomeMarkers(pizzaMap,layerId =sampleSDF@data$Adress,  label=~as.factor(routes),icon = urgencyIcons[sampleSDF@data$group])
-  for( i in 1:numRoutes){
-    pizzaMap <- addPolylines(pizzaMap, lng=routes_final[routes_final$routeNum==i,]$lon,lat=routes_final[routes_final$routeNum==i,]$lat,data=routes_final[routes_final$routeNum==i,], color=pal(i))
+  numSections=length(unique(routes_final$sectionID))
+  pal <- colorNumeric(c("red", "green", "blue"), 1:numRoutes)
+  
+  for( i in 1:numSections){
+    section=unique(routes_final$sectionID)[i]
+    data=
+    pizzaMap <- addPolylines(pizzaMap, layerId = section, lng=routes_final[routes_final$sectionID==section,]$lon,lat=routes_final[routes_final$sectionID==section,]$lat,data=routes_final[routes_final$sectionID==section,], color=pal(routes_final[routes_final$sectionID==section,]$route[1]))
   }
   #add depot
   print('ADDING DEPOT')

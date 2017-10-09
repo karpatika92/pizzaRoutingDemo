@@ -35,7 +35,7 @@ pizzaRouting=function(totalDistMat, depotAdress,depotCoords,avgSpeed){
     
   }
   #now set the order in which the adresses come!
-  for(i in nrow(route)){
+  for(i in 1:nrow(route)){
     tempTable=table(route$route[1:i])
     route$section[i]=tempTable[names(tempTable)==route$route[i]]
   }
