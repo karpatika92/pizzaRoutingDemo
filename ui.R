@@ -4,14 +4,7 @@ navbarPage("Mock Pizza Routing Demo", theme="Judge.css", responsive = TRUE,
                     fluidRow(
                     column(4,
                       wellPanel(
-                        # Specification of range within an interval
                         
-                        sliderInput("timeRange", label = "Time range",
-                                    min = as.POSIXct(Sys.time())-10000*60*60,
-                                    max = as.POSIXct(Sys.time()),
-                                    step=30*60,
-                                    value = c(as.POSIXct(Sys.time())-10000*60*60,
-                                              as.POSIXct(Sys.time()))),
                         actionButton("enterRPMode", "Enter Route Planning Mode"),
                         actionButton("endRPMode", "Leave Route Planning Mode"),
                       
