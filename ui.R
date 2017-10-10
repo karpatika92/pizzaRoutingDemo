@@ -31,8 +31,9 @@ navbarPage("Mock Pizza Routing Demo", theme="Judge.css", responsive = TRUE,
            )
 ),
 tabPanel("Orders",
+         fluidRow(
          tableOutput("table2")
-         
+         )
 )
 
 

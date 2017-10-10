@@ -23,6 +23,7 @@ ui <- source('~/pizzaRoutingDemo/ui.R')
 server <- function(input, output, session) {
   #generation fake data
   data <- reactiveValues(clickedMarker=NULL)
+  SDF<-reactiveValues(data=NULL)
   #this stores the clicked line
   clickedLine <- reactiveValues(clickedLine=NULL)
   manualRPMode=reactiveValues(value = FALSE)
@@ -55,6 +56,11 @@ server <- function(input, output, session) {
         displayMap
 
   })
+      SDF$data=sampleSDF@data
+      output$table2 <- renderDataTable({
+        
+        SDF$data
+      })
       output$waitPlot <- renderPlot({
         
         x    <- as.numeric(sampleSDF$waitingTime)
